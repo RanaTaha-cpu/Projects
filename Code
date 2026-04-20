@@ -1,0 +1,90 @@
+#include <ESP8266WiFi.h>
+#include <Servo.h>
+#include <Keypad.h>
+#include <U8g2lib.h>
+#include <Wire.h>
+
+// OLED Display Setup (I2C)
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);
+
+// Servo Setup
+Servo myServo;
+const int servoPin = D4; 
+
+// Keypad Setup
+const byte ROWS = 4; 
+const byte COLS = 3; 
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+byte rowPins[ROWS] = {D0, D1, D2, D3}; 
+byte colPins[COLS] = {D5, D6, D7}; 
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+// Variables
+char masterCode = "1234"; // Aapka 4-digit code
+char enteredCode;
+int masterCount = 0;
+
+void setup() {
+  myServo.attach(servoPin);
+  myServo.write(0); // Locked position
+  u8g2.begin();
+  displayMessage("Enter Code:");
+}
+
+void loop() {
+  char key = keypad.getKey();
+
+  if (key) {
+    enteredCode[masterCount] = key;
+    masterCount++;
+    
+    // OLED par '*' show karne k liye
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.drawStr(0, 20, "Entering...");
+    for(int i=0; i<masterCount; i++) {
+      u8g2.drawStr(i*10, 40, "*");
+    }
+    u8g2.sendBuffer();
+
+    if (masterCount == 4) {
+      delay(200);
+      if (strcmp(enteredCode, masterCode) == 0) {
+        handleAccess(true);
+      } else {
+        handleAccess(false);
+      }
+      masterCount = 0;
+      memset(enteredCode, 0, sizeof(enteredCode));
+    }
+  }
+}
+
+void handleAccess(bool granted) {
+  u8g2.clearBuffer();
+  if (granted) {
+    u8g2.drawStr(0, 30, "ACCESS GRANTED");
+    u8g2.sendBuffer();
+    myServo.write(90); // Unlock
+    delay(3000);       // 3 second wait
+    myServo.write(0);  // Relock
+  } else {
+    u8g2.drawStr(0, 30, "WRONG CODE!");
+    u8g2.sendBuffer();
+    delay(2000);
+  }
+  displayMessage("Enter Code:");
+}
+
+void displayMessage(const char* msg) {
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(0, 30, msg);
+  u8g2.sendBuffer();
+}
