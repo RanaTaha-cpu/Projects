@@ -1,2 +1,4 @@
 # Projects
-This repository showcases a collection of electronics and embedded systems projects developed to demonstrate practical knowledge of circuit design, robotics, and microcontroller-based applications. The projects focus on real-world problem solving using fundamental engineering concepts and hands-on implementation.
+ESP8266 Digital Lock Code (4-Digit)
+The IoT-Enabled Digital Code Lock System is a sophisticated security solution powered by the ESP8266 NodeMCU. This system replaces traditional mechanical keys with a secure digital interface. It features a 4x3 Matrix Keypad for user interaction and a 0.96" I2C OLED Display that provides real-time status updates while maintaining privacy by masking the entered digits.
+When a user enters a 4-digit PIN, the ESP8266 compares the input against a pre-defined master code stored in its memory. Upon successful authentication, the controller generates a PWM (Pulse Width Modulation) signal to trigger a 9g Servo Motor, which rotates to a specific angle to retract the locking latch. The integration of Wi-Fi allows for future expansions like mobile notifications or remote unlocking via a web dashboard.
